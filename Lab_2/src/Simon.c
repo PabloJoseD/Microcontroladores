@@ -1,32 +1,71 @@
+#include <avr/interrupt.h> 
 #include <avr/io.h>
 #include <util/delay.h>
-#include <avr/interrupt.h> 
 
-int main(void)
-{
-  DDRB = 0x08; //Configuracion del puerto PB3 como salida, el resto como entrada
 
-  // Configurar PD2 (INT0) como entrada para el botón
-  DDRD &= ~(1 << PD2); // Limpiar PD2 para configurarlo como entrada
+void pines();
+void interrupciones();
 
-  // Configurar INT0 para que se active en el flanco descendente (pulsación del botón)
-  MCUCR |= (1 << ISC01);  // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
-  MCUCR &= ~(1 << ISC00);
+int main(void){
 
-  // Habilitar la interrupción externa INT0
-  GIMSK |= (1 << INT0);
-  
+  pines();
+  interrupciones();
   sei(); // Habilita interrupcion global
-  
+
   while (1) {
 
   }
+
+}
+
+void pines(){
+  DDRB = 0x0F; //Puertos PB0, PB1, PB2 y PB3 como salida
+
+  // Puertos PD0, PD1, PD2 y PD3 como entrada para los botones
+  DDRD &= ~(1 << PD0); 
+  DDRD &= ~(1 << PD1); 
+  DDRD &= ~(1 << PD2);
+  DDRD &= ~(1 << PD3); 
+
+}
+
+void interrupciones(){
+
+  // Configuración de interrupciones externas en INT0, INT1 y PCINT para PD3
+  MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
+  MCUCR &= ~((1 << ISC00) | (1 << ISC10)); // ISC11 = 1, ISC10 = 0 -> Flanco descendente de INT1 genera interrupción
+  GIMSK |= (1 << INT0) | (1 << INT1); // Habilitar interrupciones INT0 y INT1
+
+
+  PCMSK1 |= (1 << PCINT8) | (1 << PCINT9); // Habilita PCINT8 y PCINT9
+
 }
 
 
 ISR(INT0_vect){
-  PORTB = 0x08;  // Enciende el LED
+  PORTB = 0x04;  // Enciende el LED verde
   _delay_ms(1000);
   PORTB = 0x00;  // Apaga el LED
     
 }
+
+ISR(INT1_vect){
+  PORTB = 0x01;  // Enciende el LED amarillo
+  _delay_ms(1000);
+  PORTB = 0x00;  // Apaga el LED
+    
+}
+
+ISR (PCINT1_vect){
+  PORTB = 0x02;  // Enciende el LED amarillo
+  _delay_ms(1000);
+  PORTB = 0x00;  // Apaga el LED
+}
+
+
+ISR(PCINT2_vect) {
+  PORTB = 0x08;  // Enciende el LED amarillo
+  _delay_ms(1000);
+  PORTB = 0x00;  // Apaga el LED
+}
+
