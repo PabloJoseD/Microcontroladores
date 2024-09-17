@@ -7,7 +7,6 @@
 
 #define MAX_SECUENCIA 20  // Longitud máxima de la secuencia
 #define TIEMPO_INICIAL 10000  // Tiempo inicial de encendido de LEDs en milisegundos
-#define REDUCCION_TIEMPO 200 // Reducción de tiempo de encendido por nivel
 
 // FSM States
 typedef enum {
@@ -24,19 +23,21 @@ int verde = 0, amarillo = 0, rojo = 0, azul = 0;
 
 uint8_t secuencia[MAX_SECUENCIA];  // Arreglo para almacenar la secuencia de LEDs
 uint8_t nivel = 1;  // Nivel inicial del juego
-uint16_t tiempo_encendido = TIEMPO_INICIAL;  // Tiempo inicial de encendido de los LEDs
+uint16_t tiempo_encendido = 10000;  // Tiempo inicial de encendido de los LEDs
 
 void pines();
 void interrupciones();
 void parpadear_dos_veces();
+void parpadear_tres_veces();
 void reiniciar_colores();
 void maquina();
 void apagar_leds();
+void delay_variable_ms(uint16_t ms);
 
 void inicializar_aleatorio();
-void generar_secuencia_aleatoria(uint8_t longitud);
-void mostrar_secuencia(uint8_t longitud, uint16_t tiempo_encendido);
-uint8_t jugador_reproduce_correctamente(uint8_t longitud);  // Función ficticiA
+void generate_sequence(uint8_t longitud);
+void show_sequence(uint8_t longitud, uint16_t tiempo_encendido);
+uint8_t get_user_input(uint8_t longitud);  // Función ficticiA
 
 
 int main(void){
@@ -70,28 +71,37 @@ void maquina() {
       break;
 
     case SHOW_SEQUENCE:
-      generar_secuencia_aleatoria(4 + nivel - 1);  // Genera una secuencia aleatoria con longitud basada en el nivel
-      mostrar_secuencia(4 + nivel - 1, tiempo_encendido);  // Muestra la secuencia al jugador
+      generate_sequence(4 + nivel - 1);  // Genera una secuencia aleatoria con longitud basada en el nivel
+      show_sequence(4 + nivel - 1, tiempo_encendido);  // Muestra la secuencia al jugador
       current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
       break;
 
-    // case WAIT_USER_INPUT:
-    //   _delay_ms(10000);
-    //   nivel++;  // Incrementar el nivel
-    //   tiempo_encendido = (tiempo_encendido > REDUCCION_TIEMPO) ? tiempo_encendido - REDUCCION_TIEMPO : REDUCCION_TIEMPO;  // Reducir el tiempo de encendido
-    //   current_state = SHOW_SEQUENCE;
-    //   break;
+    case WAIT_USER_INPUT:
+      
+      // nivel++;  // Incrementar el nivel
+      // tiempo_encendido -= 8000;
+      // _delay_ms(100000);
+      // current_state = SHOW_SEQUENCE;
+
+      if (get_user_input(4 + nivel - 1)) {  // Verificar si el jugador reproduce correctamente (función ficticia)
+        nivel++;  // Incrementar el nivel
+        tiempo_encendido -= 8000;
+        current_state = SHOW_SEQUENCE;  // Volver a mostrar la secuencia
+      } else {
+        parpadear_tres_veces();  // Mostrar indicación de error si el jugador falla
+        current_state = WAITING_START;  // Volver al estado inicial de espera
+      }
+
+
+      break;
 
     default:
       break;
   }
 }
 
-void inicializar_aleatorio() {
-    srand(time(NULL));  // Inicializa el generador de números aleatorios con una semilla basada en el tiempo
-}
 
-void generar_secuencia_aleatoria(uint8_t longitud) {
+void generate_sequence(uint8_t longitud) {
     if (longitud > MAX_SECUENCIA) {
         longitud = MAX_SECUENCIA;
     }
@@ -136,12 +146,11 @@ void delay_variable_ms(uint16_t ms) {
 }
 
 
-void mostrar_secuencia(uint8_t longitud, uint16_t tiempo_encendido) {
+void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
     for (uint8_t i = 0; i < longitud; i++) {
         switch (secuencia[i]) {
             case 0:
                 led_verde();
-                _delay_ms(1000);
                 break;
             case 1:
                 led_amarillo();
@@ -154,9 +163,42 @@ void mostrar_secuencia(uint8_t longitud, uint16_t tiempo_encendido) {
                 break;
         }
        delay_variable_ms(tiempo_encendido);  // Mantén el LED encendido por el tiempo actual
-        apagar_leds();    // Apaga todos los LEDs
-        _delay_ms(10000);  // Pequeña pausa entre las luces
+       apagar_leds();    // Apaga todos los LEDs
+       _delay_ms(5000);  // Pequeña pausa entre las luces
     }
+}
+
+uint8_t get_user_input(uint8_t longitud) {
+    // Verificar cada paso de la secuencia
+    for (uint8_t i = 0; i < longitud; i++) {
+        // Reiniciar las variables de entrada del jugador antes de verificar el próximo LED
+        reiniciar_colores();
+
+        // Esperar a que el jugador presione algún botón
+        while (1) {
+            // Verificar si la entrada es incorrecta
+            if ((secuencia[i] == 0 && (amarillo || rojo || azul)) || 
+                (secuencia[i] == 1 && (verde || rojo || azul)) || 
+                (secuencia[i] == 2 && (verde || amarillo || azul)) || 
+                (secuencia[i] == 3 && (verde || amarillo || rojo))) {
+                return 0;  // El jugador se equivocó en la secuencia
+            }
+            
+            // Verificar si la entrada es correcta
+            if ((secuencia[i] == 0 && verde) || 
+                (secuencia[i] == 1 && amarillo) || 
+                (secuencia[i] == 2 && rojo) || 
+                (secuencia[i] == 3 && azul)) {
+                break;  // Salir del bucle y continuar con la siguiente entrada
+            }
+
+            _delay_ms(50);  // Pequeño retardo para evitar rebote de botones y estabilizar la entrada
+        }
+
+        _delay_ms(200);  // Pequeño retardo para evitar que el rebote de botón afecte la próxima lectura
+    }
+
+    return 1;  // El jugador reprodujo correctamente toda la secuencia
 }
 
 
