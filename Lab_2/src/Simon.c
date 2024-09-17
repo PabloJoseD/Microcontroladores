@@ -13,13 +13,16 @@ typedef enum {
     WAITING_START,
     START_GAME,
     SHOW_SEQUENCE,
-    WAIT_USER_INPUT
+    WAIT_USER_INPUT,
+    CHECK_DIGIT,
+    GAME_LOST
 } fsm_state_t;
 
 fsm_state_t current_state = WAITING_START;
 
-int verde = 0, amarillo = 0, rojo = 0, azul = 0;
-
+int user_input = 4; 
+int user_index = 0;       // Index to track user's progress in the sequence
+int sequence_length = 4;
 
 uint8_t secuencia[MAX_SECUENCIA];  // Arreglo para almacenar la secuencia de LEDs
 uint8_t nivel = 1;  // Nivel inicial del juego
@@ -34,17 +37,15 @@ void maquina();
 void apagar_leds();
 void delay_variable_ms(uint16_t ms);
 
-void inicializar_aleatorio();
 void generate_sequence(uint8_t longitud);
 void show_sequence(uint8_t longitud, uint16_t tiempo_encendido);
-uint8_t get_user_input(uint8_t longitud);  // Función ficticiA
-
 
 int main(void){
   pines();
   interrupciones();
   sei(); // Habilita interrupcion global
-
+  user_input = 4;
+  
   while (1) {
     maquina();
 
@@ -56,44 +57,59 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      reiniciar_colores();
-      if (verde != 0 || amarillo != 0 || rojo != 0 || azul != 0)
+      
+      if (user_input == 0 || user_input == 1 || user_input == 2 || user_input == 3) {
         current_state = START_GAME;
-      else 
+      }
+      else {
         current_state = WAITING_START;
+      }
       break;
 
     case START_GAME : 
+      generate_sequence(4 + nivel - 1);  // Genera una secuencia aleatoria con longitud basada en el nivel
+      user_index = 0;        // Reset user input index
       parpadear_dos_veces();
-      reiniciar_colores();
+      user_input = 4;
       _delay_ms(5000);
       current_state = SHOW_SEQUENCE;
       break;
 
     case SHOW_SEQUENCE:
-      generate_sequence(4 + nivel - 1);  // Genera una secuencia aleatoria con longitud basada en el nivel
-      show_sequence(4 + nivel - 1, tiempo_encendido);  // Muestra la secuencia al jugador
+      show_sequence(4 + nivel -1, tiempo_encendido);  // Muestra la secuencia al jugador
+      user_index = 0;    // Reset index for user input
+      user_input = 4;
       current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
       break;
 
     case WAIT_USER_INPUT:
-      
-      // nivel++;  // Incrementar el nivel
-      // tiempo_encendido -= 8000;
-      // _delay_ms(100000);
-      // current_state = SHOW_SEQUENCE;
+      if (user_input < 4)
+        current_state = CHECK_DIGIT;  // Se presiono algun boton
+      else 
+        current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
 
-      if (get_user_input(4 + nivel - 1)) {  // Verificar si el jugador reproduce correctamente (función ficticia)
-        nivel++;  // Incrementar el nivel
-        tiempo_encendido -= 8000;
-        current_state = SHOW_SEQUENCE;  // Volver a mostrar la secuencia
+
+    case CHECK_DIGIT: 
+      if (user_input == secuencia[user_index]) {
+        // Correct digit, move to the next one
+        user_index++;
+        if (user_index == sequence_length) {
+            // User completed the sequence, game won
+            nivel++;
+            tiempo_encendido -= 8000;
+            current_state = SHOW_SEQUENCE;
+        } else {
+            // Continue waiting for next digit
+            current_state = WAIT_USER_INPUT;
+        }
       } else {
-        parpadear_tres_veces();  // Mostrar indicación de error si el jugador falla
-        current_state = WAITING_START;  // Volver al estado inicial de espera
+        // Incorrect digit, user loses
+        parpadear_tres_veces();
+        current_state = WAITING_START;
       }
-
-
       break;
+    
+     
 
     default:
       break;
@@ -102,14 +118,11 @@ void maquina() {
 
 
 void generate_sequence(uint8_t longitud) {
-    if (longitud > MAX_SECUENCIA) {
-        longitud = MAX_SECUENCIA;
-    }
-    for (uint8_t i = 0; i < longitud; i++) {
-        secuencia[i] = rand() % 4;  // Genera un número aleatorio entre 0 y 3 para determinar qué LED se enciende
+    srand(time(NULL));  // Seed the random number generator
+    for (int i = 0; i < longitud; i++) {
+        secuencia[i] = (rand() % 4);  // Random number between 0 and 3
     }
 }
-
 
 void led_verde(){
   PORTB = 0x04;  // Enciende el LED verde
@@ -129,13 +142,6 @@ void led_azul(){
 
 void apagar_leds(){
   PORTB = 0x00;  
-}
-
-void reiniciar_colores(){
-  verde    = 0;
-  amarillo = 0;
-  rojo     = 0;
-  azul     = 0;
 }
 
 void delay_variable_ms(uint16_t ms) {
@@ -168,48 +174,9 @@ void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
     }
 }
 
-uint8_t get_user_input(uint8_t longitud) {
-    // Verificar cada paso de la secuencia
-    for (uint8_t i = 0; i < longitud; i++) {
-        // Reiniciar las variables de entrada del jugador antes de verificar el próximo LED
-        reiniciar_colores();
-
-        // Esperar a que el jugador presione algún botón
-        while (1) {
-            // Verificar si la entrada es incorrecta
-            if ((secuencia[i] == 0 && (amarillo || rojo || azul)) || 
-                (secuencia[i] == 1 && (verde || rojo || azul)) || 
-                (secuencia[i] == 2 && (verde || amarillo || azul)) || 
-                (secuencia[i] == 3 && (verde || amarillo || rojo))) {
-                return 0;  // El jugador se equivocó en la secuencia
-            }
-            
-            // Verificar si la entrada es correcta
-            if ((secuencia[i] == 0 && verde) || 
-                (secuencia[i] == 1 && amarillo) || 
-                (secuencia[i] == 2 && rojo) || 
-                (secuencia[i] == 3 && azul)) {
-                break;  // Salir del bucle y continuar con la siguiente entrada
-            }
-
-            _delay_ms(50);  // Pequeño retardo para evitar rebote de botones y estabilizar la entrada
-        }
-
-        _delay_ms(200);  // Pequeño retardo para evitar que el rebote de botón afecte la próxima lectura
-    }
-
-    return 1;  // El jugador reprodujo correctamente toda la secuencia
-}
-
 
 void pines(){
   DDRB = 0x0F; //Puertos PB0, PB1, PB2 y PB3 como salida
-
-  // Puertos PD0, PD1, PD2 y PD3 como entrada para los botones
-  DDRD &= ~(1 << PD0); 
-  DDRD &= ~(1 << PD1); 
-  DDRD &= ~(1 << PD2);
-  DDRD &= ~(1 << PD3); 
 
 }
 
@@ -246,18 +213,18 @@ void parpadear_tres_veces(){
 
 
 ISR(INT0_vect){
-  verde = 1;
+  user_input = 0;
 }
 
 ISR(INT1_vect){
-  amarillo = 1;
+  user_input = 1;
 }
 
 ISR (PCINT2_vect){
-  rojo = 1;
+  user_input = 2;
 }
 
 ISR (PCINT1_vect) {
-  azul = 1;
+  user_input = 3;
 }
 
