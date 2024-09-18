@@ -44,7 +44,7 @@ int main(void){
   pines();
   interrupciones();
   sei(); // Habilita interrupcion global
-  user_input = 0;
+  user_input = 6;
   
   while (1) {
     maquina();
@@ -56,7 +56,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      if (user_input == 1/*| user_input == 2 || user_input == 3 || user_input == 4*/) {
+      if (user_input == 1 || user_input == 2 || user_input == 4 || user_input == 0) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
       }
       else {
@@ -70,7 +70,7 @@ void maquina() {
       parpadear_dos_veces();
       user_input = 0;
       _delay_ms(5000);
-      current_state = SHOW_SEQUENCE;
+      current_state = WAITING_START; // SHOW_SEQUENCE
       break;
 
     // case SHOW_SEQUENCE:
@@ -176,7 +176,7 @@ void pines(){
 
 void interrupciones(){
 
-  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE2 y PCIE1.
+  GIMSK = 0xE8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
 
   // Configuración de interrupciones externas en INT0, INT1 y PCINT para PD3
   MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
@@ -184,12 +184,12 @@ void interrupciones(){
   
   // MCUCR = 0b00001010;
 
-  PCMSK2 |= (1 << PCINT11); // Habilita PCINT11
-  PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
+  //PCMSK2 |= (1 << PCINT12); // Habilita PCINT11
+  //PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
 
   // PCMSK2 = 0b00000001;
-  // PCMSK1 = 0b00000001;
-
+  PCMSK1 = 0b00000001;
+  PCMSK = 0b10000000;
 }
 
 void parpadear_dos_veces(){
@@ -220,7 +220,7 @@ ISR(INT1_vect){
 }
 
 ISR (PCINT2_vect){
-  user_input = 3;  // rojo D0 pcint11
+  user_input = 3;  // rojo B7 pcint11
 }
 
 ISR (PCINT1_vect) {
