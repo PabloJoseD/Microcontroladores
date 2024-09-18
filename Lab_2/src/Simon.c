@@ -59,7 +59,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      if (user_input == 1 || user_input == 2 || user_input == 4) { //user_input == 1 || user_input == 2 || user_input == 4
+      if (user_input == 1 || user_input == 2 || user_input == 3 || user_input == 4) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
         user_input = 0;
         nivel = 1;
@@ -86,7 +86,7 @@ void maquina() {
       break;
 
     case WAIT_USER_INPUT:
-      if (user_input == 1 || user_input == 2 || user_input == 4)
+      if (user_input == 1 || user_input == 2 || user_input == 3 || user_input == 4)
         current_state = CHECK_DIGIT;  // Se presiono algun boton
       else 
         current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
@@ -237,7 +237,9 @@ ISR(INT1_vect){
 }
 
 ISR (PCINT2_vect){
-  user_input = 3;  // rojo B7 pcint11
+  if (!(PIND & (1 << PD1))) {
+    user_input = 3;  // rojo B7 pcint11
+  }
 }
 
 ISR (PCINT1_vect) {
