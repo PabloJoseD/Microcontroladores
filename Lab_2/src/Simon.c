@@ -20,12 +20,12 @@ typedef enum {
 
 fsm_state_t current_state = WAITING_START;
 
-int user_input = 4; 
+int user_input; 
 int user_index = 0;       // Index to track user's progress in the sequence
 int sequence_length = 4;
 
-uint8_t secuencia[MAX_SECUENCIA];  // Arreglo para almacenar la secuencia de LEDs
-uint8_t nivel = 1;  // Nivel inicial del juego
+uint8_t secuencia[MAX_SECUENCIA];   // Arreglo para almacenar la secuencia de LEDs
+uint8_t nivel = 1;                  // Nivel inicial del juego
 uint16_t tiempo_encendido = 10000;  // Tiempo inicial de encendido de los LEDs
 
 void pines();
@@ -44,11 +44,10 @@ int main(void){
   pines();
   interrupciones();
   sei(); // Habilita interrupcion global
-  user_input = 4;
+  user_input = 0;
   
   while (1) {
     maquina();
-
   }
 
 }
@@ -57,8 +56,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      
-      if (user_input == 0 || user_input == 1 || user_input == 2 || user_input == 3) {
+      if (user_input == 1/*| user_input == 2 || user_input == 3 || user_input == 4*/) {
         current_state = START_GAME;
       }
       else {
@@ -67,26 +65,26 @@ void maquina() {
       break;
 
     case START_GAME : 
-      generate_sequence(4 + nivel - 1);  // Genera una secuencia aleatoria con longitud basada en el nivel
+      generate_sequence(3 + nivel);  // Genera una secuencia aleatoria con longitud basada en el nivel
       user_index = 0;        // Reset user input index
       parpadear_dos_veces();
-      user_input = 4;
+      user_input = 0;
       _delay_ms(5000);
       current_state = SHOW_SEQUENCE;
       break;
 
-    case SHOW_SEQUENCE:
-      show_sequence(4 + nivel -1, tiempo_encendido);  // Muestra la secuencia al jugador
-      user_index = 0;    // Reset index for user input
-      user_input = 4;
-      current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
-      break;
+    // case SHOW_SEQUENCE:
+    //   show_sequence(3 + nivel, tiempo_encendido);  // Muestra la secuencia al jugador
+    //   user_index = 0;    // Reset index for user input
+    //   user_input = 0;
+    //   current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
+    //   break;
 
-    case WAIT_USER_INPUT:
-      if (user_input < 4)
-        current_state = CHECK_DIGIT;  // Se presiono algun boton
-      else 
-        current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
+    // case WAIT_USER_INPUT:
+    //   if (user_input < 4)
+    //     current_state = CHECK_DIGIT;  // Se presiono algun boton
+    //   else 
+    //     current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
 
 
     case CHECK_DIGIT: 
@@ -108,9 +106,6 @@ void maquina() {
         current_state = WAITING_START;
       }
       break;
-    
-     
-
     default:
       break;
   }
@@ -120,7 +115,7 @@ void maquina() {
 void generate_sequence(uint8_t longitud) {
     srand(time(NULL));  // Seed the random number generator
     for (int i = 0; i < longitud; i++) {
-        secuencia[i] = (rand() % 4);  // Random number between 0 and 3
+        secuencia[i] = (rand() % 4 + 1);  // Random number between 0 and 3
     }
 }
 
@@ -155,16 +150,16 @@ void delay_variable_ms(uint16_t ms) {
 void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
     for (uint8_t i = 0; i < longitud; i++) {
         switch (secuencia[i]) {
-            case 0:
+            case 1:
                 led_verde();
                 break;
-            case 1:
+            case 2:
                 led_amarillo();
                 break;
-            case 2:
+            case 3:
                 led_rojo();
                 break;
-            case 3:
+            case 4:
                 led_azul();
                 break;
         }
@@ -177,7 +172,6 @@ void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
 
 void pines(){
   DDRB = 0x0F; //Puertos PB0, PB1, PB2 y PB3 como salida
-
 }
 
 void interrupciones(){
@@ -188,8 +182,13 @@ void interrupciones(){
   MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
   MCUCR &= ~((1 << ISC00) | (1 << ISC10)); // ISC11 = 1, ISC10 = 0 -> Flanco descendente de INT1 genera interrupción
   
+  // MCUCR = 0b00001010;
+
   PCMSK2 |= (1 << PCINT11); // Habilita PCINT11
   PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
+
+  // PCMSK2 = 0b00000001;
+  // PCMSK1 = 0b00000001;
 
 }
 
@@ -213,18 +212,18 @@ void parpadear_tres_veces(){
 
 
 ISR(INT0_vect){
-  user_input = 0;
+  user_input = 1; //verde D2
 }
 
 ISR(INT1_vect){
-  user_input = 1;
+  user_input = 2; //amarillo D3
 }
 
 ISR (PCINT2_vect){
-  user_input = 2;
+  user_input = 3;  // rojo D0 pcint11
 }
 
 ISR (PCINT1_vect) {
-  user_input = 3;
+  user_input = 4;  //azul A0 pcint8
 }
 
