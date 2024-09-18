@@ -9,24 +9,26 @@
 #define TIEMPO_INICIAL 10000  // Tiempo inicial de encendido de LEDs en milisegundos
 
 // FSM States
-typedef enum {
-    WAITING_START,
-    START_GAME,
-    SHOW_SEQUENCE,
-    WAIT_USER_INPUT,
-    CHECK_DIGIT,
-    GAME_LOST
-} fsm_state_t;
+//typedef enum {
+#define INITIAL_STATE 1
+#define WAITING_START 2
+#define START_GAME 4
+#define SHOW_SEQUENCE 8
+#define WAIT_USER_INPUT 16
+#define CHECK_DIGIT 32
+#define GAME_WON 64  
+#define GAME_LOST 128
+//} fsm_state_t;
 
-fsm_state_t current_state = WAITING_START;
+int current_state;
 
 int user_input; 
 int user_index = 0;       // Index to track user's progress in the sequence
 int sequence_length = 4;
 
 uint8_t secuencia[MAX_SECUENCIA];   // Arreglo para almacenar la secuencia de LEDs
-uint8_t nivel = 1;                  // Nivel inicial del juego
-uint16_t tiempo_encendido = 10000;  // Tiempo inicial de encendido de los LEDs
+uint8_t nivel;                  // Nivel inicial del juego
+uint16_t tiempo_encendido = 60000;  // Tiempo inicial de encendido de los LEDs
 
 void pines();
 void interrupciones();
@@ -43,8 +45,9 @@ void show_sequence(uint8_t longitud, uint16_t tiempo_encendido);
 int main(void){
   pines();
   interrupciones();
+  current_state = WAITING_START;
+  user_input = 0;
   sei(); // Habilita interrupcion global
-  user_input = 6;
   
   while (1) {
     maquina();
@@ -56,8 +59,11 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      if (user_input == 1 || user_input == 2 || user_input == 4 || user_input == 0) { //user_input == 1 || user_input == 2 || user_input == 4
+      if (user_input == 1 || user_input == 2 || user_input == 4) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
+        user_input = 0;
+        nivel = 1;
+        parpadear_dos_veces();
       }
       else {
         current_state = WAITING_START;
@@ -67,45 +73,56 @@ void maquina() {
     case START_GAME : 
       generate_sequence(3 + nivel);  // Genera una secuencia aleatoria con longitud basada en el nivel
       user_index = 0;        // Reset user input index
-      parpadear_dos_veces();
       user_input = 0;
       _delay_ms(5000);
-      current_state = WAITING_START; // SHOW_SEQUENCE
+      current_state = SHOW_SEQUENCE; // SHOW_SEQUENCE
       break;
 
-    // case SHOW_SEQUENCE:
-    //   show_sequence(3 + nivel, tiempo_encendido);  // Muestra la secuencia al jugador
-    //   user_index = 0;    // Reset index for user input
-    //   user_input = 0;
-    //   current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
-    //   break;
+    case SHOW_SEQUENCE:
+      show_sequence(3 + nivel, tiempo_encendido);  // Muestra la secuencia al jugador
+      user_index = 0;    // Reset index for user input
+      user_input = 0;
+      current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
+      break;
 
-    // case WAIT_USER_INPUT:
-    //   if (user_input < 4)
-    //     current_state = CHECK_DIGIT;  // Se presiono algun boton
-    //   else 
-    //     current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
-
+    case WAIT_USER_INPUT:
+      if (user_input == 1 || user_input == 2 || user_input == 4)
+        current_state = CHECK_DIGIT;  // Se presiono algun boton
+      else 
+        current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
+      break;
 
     case CHECK_DIGIT: 
-      if (user_input == secuencia[user_index]) {
+      if (user_input == secuencia[user_index] || user_input == 1) {
         // Correct digit, move to the next one
         user_index++;
-        if (user_index == sequence_length) {
-            // User completed the sequence, game won
-            nivel++;
-            tiempo_encendido -= 8000;
-            current_state = SHOW_SEQUENCE;
+        if (user_index == 3 + nivel) {
+          // User completed the sequence, game won
+          current_state = GAME_WON;
+          user_input = 0;
         } else {
-            // Continue waiting for next digit
-            current_state = WAIT_USER_INPUT;
+          // Continue waiting for next digit
+          current_state = WAIT_USER_INPUT;
+          user_input = 0;
         }
       } else {
-        // Incorrect digit, user loses
-        parpadear_tres_veces();
-        current_state = WAITING_START;
+        user_input = 0;
+        current_state = GAME_LOST;
       }
       break;
+
+    case GAME_WON:
+      tiempo_encendido -= 8000;
+      nivel++;
+      current_state = START_GAME;
+      break;
+
+    case GAME_LOST:
+      // Incorrect digit, user loses
+      parpadear_tres_veces();
+      current_state = WAITING_START;
+      break;
+
     default:
       break;
   }
@@ -176,20 +193,20 @@ void pines(){
 
 void interrupciones(){
 
-  GIMSK = 0xE8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
+  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
 
   // Configuración de interrupciones externas en INT0, INT1 y PCINT para PD3
-  MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
-  MCUCR &= ~((1 << ISC00) | (1 << ISC10)); // ISC11 = 1, ISC10 = 0 -> Flanco descendente de INT1 genera interrupción
+  // MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
+  // MCUCR &= ~((1 << ISC00) | (1 << ISC10)); // ISC11 = 1, ISC10 = 0 -> Flanco descendente de INT1 genera interrupción
   
-  // MCUCR = 0b00001010;
 
-  //PCMSK2 |= (1 << PCINT12); // Habilita PCINT11
-  //PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
+  PCMSK2 |= (1 << PCINT12); // Habilita PCINT11
+  PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
 
-  // PCMSK2 = 0b00000001;
-  PCMSK1 = 0b00000001;
-  PCMSK = 0b10000000;
+  //PCMSK = 0b10000000;
+  //PCMSK1 = 0b0000100;
+  //PCMSK2 = 0b00000001;
+  MCUCR = 0b00001010;
 }
 
 void parpadear_dos_veces(){
@@ -224,6 +241,8 @@ ISR (PCINT2_vect){
 }
 
 ISR (PCINT1_vect) {
-  user_input = 4;  //azul A0 pcint8
+  if (!(PINA & (1 << PA0))) {
+    user_input = 4;  //azul A0 pcint8
+  }
 }
 
