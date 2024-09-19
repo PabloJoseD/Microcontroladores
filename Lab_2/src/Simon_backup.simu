@@ -70,7 +70,7 @@ Circuit Id: Resistor-2
 
 Unique  Id: attiny4313-1: 
 Circuit Id: attiny4313-1
-<item varList="PINA,PINB,PIND,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,," Auto_Load="false" id="attiny4313-1" circPos="0,0" itemtype="AVR" rotation="0" x="-368" mainComp="false" Logic_Symbol="false" valLabelx="0" circRot="0" Mhz="16" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="true" Program="main.hex" labelrot="0" vflip="1" objectName="attiny4313-1" hflip="1" labely="-18" boardRot="-1e+06" labelx="0" valLabely="0" eeprom="255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255" y="-264" Name=""/>
+<item varList="PINA,PINB,PIND,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,," Auto_Load="false" id="attiny4313-1" circPos="0,0" itemtype="AVR" rotation="0" x="-368" mainComp="false" Logic_Symbol="false" valLabelx="0" circRot="0" Mhz="16" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="true" Program="main.hex" labelrot="0" vflip="1" objectName="attiny4313-1" hflip="1" labely="-18" boardRot="-1e+06" labelx="0" valLabely="0" eeprom="255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255" y="-268" Name=""/>
 
 Unique  Id: Ground-27: 
 Circuit Id: Ground-27
@@ -250,7 +250,7 @@ Circuit Id: Connector-5
 
 Unique  Id: Connector-91: 
 Circuit Id: Connector-91
-<item startpinid="attiny4313-1-PB2" id="Connector-91" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-91" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Resistor-90-lPin" enodeid="Circ_eNode-493" valLabely="0" pointList="-328,-208,-276,-208" y="-208"/>
+<item startpinid="attiny4313-1-PB2" id="Connector-91" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-91" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Resistor-90-lPin" enodeid="Circ_eNode-493" valLabely="0" pointList="-328,-212,-276,-212,-276,-208" y="-212"/>
 
 Unique  Id: Connector-93: 
 Circuit Id: Connector-93
@@ -270,15 +270,15 @@ Circuit Id: Connector-101
 
 Unique  Id: Connector-105: 
 Circuit Id: Connector-105
-<item startpinid="attiny4313-1-PB3" id="Connector-105" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-105" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Resistor-2-lPin" enodeid="Circ_eNode-496" valLabely="0" pointList="-328,-216,-292,-216,-292,-272,-272,-272" y="-216"/>
+<item startpinid="attiny4313-1-PB3" id="Connector-105" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-105" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Resistor-2-lPin" enodeid="Circ_eNode-496" valLabely="0" pointList="-328,-220,-292,-220,-292,-272,-272,-272" y="-220"/>
 
 Unique  Id: Connector-108: 
 Circuit Id: Connector-108
-<item startpinid="attiny4313-1-PB1" id="Connector-108" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-108" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Tunnel-107-pin" enodeid="Circ_eNode-497" valLabely="0" pointList="-328,-200,-296,-200,-296,-172" y="-200"/>
+<item startpinid="attiny4313-1-PB1" id="Connector-108" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-108" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Tunnel-107-pin" enodeid="Circ_eNode-497" valLabely="0" pointList="-328,-204,-296,-204,-296,-172" y="-204"/>
 
 Unique  Id: Connector-109: 
 Circuit Id: Connector-109
-<item startpinid="attiny4313-1-PB0" id="Connector-109" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-109" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Tunnel-106-pin" enodeid="Circ_eNode-498" valLabely="0" pointList="-328,-192,-312,-192,-312,-172" y="-192"/>
+<item startpinid="attiny4313-1-PB0" id="Connector-109" circPos="0,0" itemtype="Connector" rotation="0" x="-328" mainComp="false" valLabelx="0" circRot="5.625738386958444e-277" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-109" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Tunnel-106-pin" enodeid="Circ_eNode-498" valLabely="0" pointList="-328,-196,-312,-196,-312,-172" y="-196"/>
 
 Unique  Id: Connector-114: 
 Circuit Id: Connector-114
@@ -398,7 +398,7 @@ Circuit Id: Connector-68
 
 Unique  Id: Connector-209: 
 Circuit Id: Connector-209
-<item startpinid="Node-207-1" id="Connector-209" circPos="0,0" itemtype="Connector" rotation="0" x="-664" mainComp="false" valLabelx="0" circRot="1.947570115064578e-267" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-209" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PD2" enodeid="Circ_eNode-507" valLabely="0" pointList="-664,-192,-664,-216,-376,-216" y="-192"/>
+<item startpinid="Node-207-1" id="Connector-209" circPos="0,0" itemtype="Connector" rotation="0" x="-664" mainComp="false" valLabelx="0" circRot="1.947570115064578e-267" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-209" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PD2" enodeid="Circ_eNode-507" valLabely="0" pointList="-664,-192,-664,-220,-376,-220" y="-192"/>
 
 Unique  Id: Connector-74: 
 Circuit Id: Connector-74
@@ -414,7 +414,7 @@ Circuit Id: Connector-270
 
 Unique  Id: Connector-268: 
 Circuit Id: Connector-268
-<item startpinid="attiny4313-1-PD3" id="Connector-268" circPos="0,0" itemtype="Connector" rotation="0" x="-376" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-268" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Node-269-1" enodeid="Circ_eNode-510" valLabely="0" pointList="-376,-208,-420,-208,-420,-192,-468,-192" y="-208"/>
+<item startpinid="attiny4313-1-PD3" id="Connector-268" circPos="0,0" itemtype="Connector" rotation="0" x="-376" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-268" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="Node-269-1" enodeid="Circ_eNode-510" valLabely="0" pointList="-376,-212,-420,-212,-420,-192,-468,-192" y="-212"/>
 
 Unique  Id: Connector-147: 
 Circuit Id: Connector-147
@@ -490,7 +490,7 @@ Circuit Id: Connector-390
 
 Unique  Id: Connector-348: 
 Circuit Id: Connector-348
-<item startpinid="Node-346-1" id="Connector-348" circPos="0,0" itemtype="Connector" rotation="0" x="-468" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-348" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PA0" enodeid="Circ_eNode-511" valLabely="0" pointList="-468,-328,-416,-328,-416,-224,-376,-224" y="-328"/>
+<item startpinid="Node-346-1" id="Connector-348" circPos="0,0" itemtype="Connector" rotation="0" x="-468" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-348" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PA0" enodeid="Circ_eNode-511" valLabely="0" pointList="-468,-328,-416,-328,-416,-228,-376,-228" y="-328"/>
 
 Unique  Id: Connector-237: 
 Circuit Id: Connector-237
@@ -502,6 +502,6 @@ Circuit Id: Connector-492
 
 Unique  Id: Connector-493: 
 Circuit Id: Connector-493
-<item startpinid="Node-491-1" id="Connector-493" circPos="0,0" itemtype="Connector" rotation="0" x="-664" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-493" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PD1" enodeid="Circ_eNode-516" valLabely="0" pointList="-664,-328,-664,-356,-392,-356,-392,-240,-376,-240" y="-328"/>
+<item startpinid="Node-491-1" id="Connector-493" circPos="0,0" itemtype="Connector" rotation="0" x="-664" mainComp="false" valLabelx="0" circRot="0" boardPos="-1e+06,-1e+06" valLabRot="0" Show_id="false" labelrot="0" vflip="1" objectName="Connector-493" hflip="1" labely="-24" boardRot="-1e+06" labelx="-16" endpinid="attiny4313-1-PD1" enodeid="Circ_eNode-516" valLabely="0" pointList="-664,-328,-664,-356,-392,-356,-392,-244,-376,-244" y="-328"/>
  
 </circuit>

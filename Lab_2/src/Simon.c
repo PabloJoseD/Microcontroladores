@@ -4,24 +4,20 @@
 #include <stdlib.h>  // Para rand() y srand()
 #include <time.h>
 
-
-#define MAX_SECUENCIA 20  // Longitud máxima de la secuencia
-#define TIEMPO_INICIAL 10000  // Tiempo inicial de encendido de LEDs en milisegundos
-
-
 #define WAITING_START 1
 #define START_GAME 2
 #define SHOW_SEQUENCE 4
-#define WAIT_USER_INPUT 8
+#define WAIT_color 8
 #define CHECK_DIGIT 16
 #define GAME_WON 32
 #define GAME_LOST 64
 
+#define MAX_SECUENCIA 20  // Longitud máxima de la secuencia
+
 int current_state;
 
-int user_input; 
+int color; 
 int user_index = 0;       // Index to track user's progress in the sequence
-int sequence_length = 4;
 int habilitado;
 int contador_unidades;
 int semilla = 0xBAD;
@@ -29,8 +25,8 @@ int semilla = 0xBAD;
 uint8_t secuencia[MAX_SECUENCIA];   // Arreglo para almacenar la secuencia de LEDs
 uint8_t nivel;                  // Nivel inicial del juego
 
-volatile uint16_t tiempo_encendido_actual = 0;  // Contador del tiempo transcurrido
-volatile uint16_t tiempo_encendido_maximo = 2000;  // Tiempo máximo inicial del LED encendido (2000 ms)
+volatile uint16_t tiempo_penalizado = 6;  // 200ms
+volatile uint16_t tiempo_inicial = 61;  // 2s
 
 
 void pines();
@@ -39,6 +35,7 @@ void parpadear_dos_veces();
 void parpadear_tres_veces();
 void maquina();
 void apagar_leds();
+void retardo(int desborde);
 
 void generate_sequence(uint8_t longitud);
 void show_sequence(uint8_t longitud, uint16_t tiempo_encendido);
@@ -47,7 +44,7 @@ int main(void){
   pines();
   interrupciones();
   current_state = WAITING_START;
-  user_input = 0;
+  color = 0;
   sei(); // Habilita interrupcion global
   
   while (1) {
@@ -59,44 +56,45 @@ int main(void){
 
 void maquina() {
   switch (current_state) {
+
     case WAITING_START:
       semilla += 0xCAFE;
-      if (user_input !=0) { //user_input == 1 || user_input == 2 || user_input == 4
+      if (color != 0) { //color == 1 || color == 2 || color == 4
         current_state = START_GAME;
-        user_input = 0;
-        nivel = 1;
+        color         = 0;
+        nivel         = 1;
         parpadear_dos_veces();
       }
       else {
         current_state = WAITING_START;
-        semilla += 0x13;
+        semilla       += 0x13;
       }
       break;
 
     case START_GAME : 
       generate_sequence(3 + nivel);  // Genera una secuencia aleatoria con longitud basada en el nivel
       user_index = 0;        // Reset user input index
-      user_input = 0;
-      _delay_ms(5000);
+      color      = 0;
+      retardo(30);          // Delay entre que se parpadean los leds 2 veces y se muestra la secuencia
       current_state = SHOW_SEQUENCE; // SHOW_SEQUENCE
       break;
 
     case SHOW_SEQUENCE:
-      show_sequence(3 + nivel, tiempo_encendido_maximo);  // Muestra la secuencia al jugador
-      user_index = 0;    // Reset index for user input
-      user_input = 0;
-      current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
+      show_sequence(3 + nivel, tiempo_inicial);  // Muestra la secuencia al jugador
+      user_index    = 0;    // Reset index for user input
+      color         = 0;
+      current_state = WAIT_color;  // Cambia al estado de espera de la entrada del usuario
       break;
 
-    case WAIT_USER_INPUT:
-      if (user_input != 0)
+    case WAIT_color:
+      if (color != 0)
         current_state = CHECK_DIGIT;  // Se presiono algun boton
       else 
-        current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
+        current_state = WAIT_color;  // No se ha presionado ningun boton
       break;
 
     case CHECK_DIGIT: 
-      if (user_input == secuencia[user_index]) {
+      if (color == secuencia[user_index]) {
         // Correct digit, move to the next one
         user_index++;
         if (user_index == 3 + nivel) {
@@ -104,27 +102,19 @@ void maquina() {
           current_state = GAME_WON;
         } else {
           // Continue waiting for next digit
-          current_state = WAIT_USER_INPUT;
+          current_state = WAIT_color;
         }
       } else {
         current_state = GAME_LOST;
       }
-      user_input = 0;
+      color = 0;
       break;
 
-    // case GAME_WON:
-    //   tiempo_encendido -= 8000;
-    //   nivel++;
-    //   current_state = START_GAME;
-    //   break;
-
     case GAME_WON:
-      semilla += 0xFACE;
-      if (tiempo_encendido_maximo > 200) {
-          tiempo_encendido_maximo -= 200;  // Reducir el tiempo de encendido en 200 ms
-      }
+      semilla        += 0xFACE;
+      tiempo_inicial -= tiempo_penalizado;
       nivel++;
-      current_state = START_GAME;
+      current_state  = START_GAME;
       break;
 
 
@@ -168,17 +158,8 @@ void apagar_leds(){
   PORTB = 0x00;  
 }
 
-void delay_variable_ms(uint16_t ms) {
-    while (ms > 0) {
-        _delay_ms(1);  // Retardo constante de 1 ms
-        ms--;          // Decrementa el tiempo restante
-    }
-}
-
-
-void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
+void show_sequence(uint8_t longitud, uint16_t tiempo) {
     for (uint8_t i = 0; i < longitud; i++) {
-        tiempo_encendido_maximo = tiempo_encendido;  // Establecer el tiempo de encendido actual
         switch (secuencia[i]) {
             case 1:
                 led_verde();
@@ -193,16 +174,22 @@ void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
                 led_azul();
                 break;
         }
-        tiempo_encendido_actual = 0;  // Reiniciar el tiempo
-        while (tiempo_encendido_actual < tiempo_encendido_maximo) {
-            // Espera a que el temporizador apague el LED
-        }
+        retardo(tiempo);
         apagar_leds();  // Apaga los LEDs después de que el temporizador lo controle
-        _delay_ms(500);  // Pequeña pausa entre las luces
+        retardo(30);  // Pequeña pausa entre las luces
     }
 }
 
-
+void retardo(int desborde){
+  contador_unidades = 0;
+  habilitado        = 1;
+  TIMSK             = 0b10;
+  while(contador_unidades < desborde){
+    PORTB &= 0b11111111;
+  }
+  TIMSK = 0b00;
+  habilitado = 0;
+}
 
 void pines(){
   DDRB = 0x0F; //Puertos PB0, PB1, PB2 y PB3 como salida
@@ -218,8 +205,8 @@ void interrupciones(){
   MCUCR = 0b00001010; // Configura INTx para que se active por flanco negativo
 
   // Configura el Timer/Counter0 
-  TCCR0A = 0b00000000;  
-  TCCR0B = 0b00000011;  
+  TCCR0A = 0b00000000;   
+  TCCR0B = 0b00000101;   // prescale de 1024
   TCNT0 = 0b00000000;
 
   habilitado = 0;
@@ -229,44 +216,43 @@ void interrupciones(){
 void parpadear_dos_veces(){
   for (int i = 0; i < 2; i++){
     PORTB = 0x0F;  // Enciende los leds
-    _delay_ms(3000);
+    retardo(30);
     PORTB = 0x00;  // Apaga los Leds
-    _delay_ms(4000);
+    retardo(40);
   }
 }
 
 void parpadear_tres_veces(){
   for (int i = 0; i < 3; i++){
     PORTB = 0x0F;  // Enciende los leds
-    _delay_ms(3000);
+    retardo(30);
     PORTB = 0x00;  // Apaga los Leds
-    _delay_ms(4000);
+    retardo(40);
   }
 }
 
 
 ISR(INT0_vect){
-  user_input = 1; //verde D2
+  color = 1; //verde D2
 }
 
 ISR(INT1_vect){
-  user_input = 2; //amarillo D3
+  color = 2; //amarillo D3
 }
 
 ISR (PCINT2_vect){
   if (!(PIND & (1 << PD1))) {
-    user_input = 3;  // rojo B7 pcint11
+    color = 3;  // rojo B7 pcint11
   }
 }
 
 ISR (PCINT1_vect) {
   if (!(PINA & (1 << PA0))) {
-    user_input = 4;  //azul A0 pcint8
+    color = 4;  //azul A0 pcint8
   }
 }
 
-
 ISR(TIMER0_OVF_vect) {
-    if (habilitado)
-      contador_unidades;
+  if (habilitado)
+    contador_unidades++;
 }
