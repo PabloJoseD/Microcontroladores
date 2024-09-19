@@ -8,8 +8,7 @@
 #define MAX_SECUENCIA 20  // Longitud máxima de la secuencia
 #define TIEMPO_INICIAL 10000  // Tiempo inicial de encendido de LEDs en milisegundos
 
-// FSM States
-//typedef enum {
+
 #define WAITING_START 1
 #define START_GAME 2
 #define SHOW_SEQUENCE 4
@@ -17,26 +16,29 @@
 #define CHECK_DIGIT 16
 #define GAME_WON 32
 #define GAME_LOST 64
-//} fsm_state_t;
 
 int current_state;
 
 int user_input; 
 int user_index = 0;       // Index to track user's progress in the sequence
 int sequence_length = 4;
+int habilitado;
+int contador_unidades;
+int semilla = 0xBAD;
 
 uint8_t secuencia[MAX_SECUENCIA];   // Arreglo para almacenar la secuencia de LEDs
 uint8_t nivel;                  // Nivel inicial del juego
-uint16_t tiempo_encendido = 60000;  // Tiempo inicial de encendido de los LEDs
+
+volatile uint16_t tiempo_encendido_actual = 0;  // Contador del tiempo transcurrido
+volatile uint16_t tiempo_encendido_maximo = 2000;  // Tiempo máximo inicial del LED encendido (2000 ms)
+
 
 void pines();
 void interrupciones();
 void parpadear_dos_veces();
 void parpadear_tres_veces();
-void reiniciar_colores();
 void maquina();
 void apagar_leds();
-void delay_variable_ms(uint16_t ms);
 
 void generate_sequence(uint8_t longitud);
 void show_sequence(uint8_t longitud, uint16_t tiempo_encendido);
@@ -58,6 +60,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
+      semilla += 0xCAFE;
       if (user_input !=0) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
         user_input = 0;
@@ -66,6 +69,7 @@ void maquina() {
       }
       else {
         current_state = WAITING_START;
+        semilla += 0x13;
       }
       break;
 
@@ -78,7 +82,7 @@ void maquina() {
       break;
 
     case SHOW_SEQUENCE:
-      show_sequence(3 + nivel, tiempo_encendido);  // Muestra la secuencia al jugador
+      show_sequence(3 + nivel, tiempo_encendido_maximo);  // Muestra la secuencia al jugador
       user_index = 0;    // Reset index for user input
       user_input = 0;
       current_state = WAIT_USER_INPUT;  // Cambia al estado de espera de la entrada del usuario
@@ -108,11 +112,21 @@ void maquina() {
       user_input = 0;
       break;
 
+    // case GAME_WON:
+    //   tiempo_encendido -= 8000;
+    //   nivel++;
+    //   current_state = START_GAME;
+    //   break;
+
     case GAME_WON:
-      tiempo_encendido -= 8000;
+      semilla += 0xFACE;
+      if (tiempo_encendido_maximo > 200) {
+          tiempo_encendido_maximo -= 200;  // Reducir el tiempo de encendido en 200 ms
+      }
       nivel++;
       current_state = START_GAME;
       break;
+
 
     case GAME_LOST:
       // Incorrect digit, user loses
@@ -127,7 +141,8 @@ void maquina() {
 
 
 void generate_sequence(uint8_t longitud) {
-    srand(time(NULL));  // Seed the random number generator
+    semilla += 0x77;
+    srand(semilla);  // Seed the random number generator
     for (int i = 0; i < longitud; i++) {
         secuencia[i] = (rand() % 4 + 1);  // Random number between 0 and 3
     }
@@ -163,6 +178,7 @@ void delay_variable_ms(uint16_t ms) {
 
 void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
     for (uint8_t i = 0; i < longitud; i++) {
+        tiempo_encendido_maximo = tiempo_encendido;  // Establecer el tiempo de encendido actual
         switch (secuencia[i]) {
             case 1:
                 led_verde();
@@ -177,11 +193,15 @@ void show_sequence(uint8_t longitud, uint16_t tiempo_encendido) {
                 led_azul();
                 break;
         }
-       delay_variable_ms(tiempo_encendido);  // Mantén el LED encendido por el tiempo actual
-       apagar_leds();    // Apaga todos los LEDs
-       _delay_ms(5000);  // Pequeña pausa entre las luces
+        tiempo_encendido_actual = 0;  // Reiniciar el tiempo
+        while (tiempo_encendido_actual < tiempo_encendido_maximo) {
+            // Espera a que el temporizador apague el LED
+        }
+        apagar_leds();  // Apaga los LEDs después de que el temporizador lo controle
+        _delay_ms(500);  // Pequeña pausa entre las luces
     }
 }
+
 
 
 void pines(){
@@ -190,12 +210,20 @@ void pines(){
 
 void interrupciones(){
 
-  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
+  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE1 y PCIE2.
 
   PCMSK1 = 0b00000001; // Habilita PCINT8
   PCMSK2 = 0b00000010; // Habilita PCINT12
   
   MCUCR = 0b00001010; // Configura INTx para que se active por flanco negativo
+
+  // Configura el Timer/Counter0 
+  TCCR0A = 0b00000000;  
+  TCCR0B = 0b00000011;  
+  TCNT0 = 0b00000000;
+
+  habilitado = 0;
+  contador_unidades = 0;
 }
 
 void parpadear_dos_veces(){
@@ -208,7 +236,7 @@ void parpadear_dos_veces(){
 }
 
 void parpadear_tres_veces(){
-  for (int i = 0; i < 4; i++){
+  for (int i = 0; i < 3; i++){
     PORTB = 0x0F;  // Enciende los leds
     _delay_ms(3000);
     PORTB = 0x00;  // Apaga los Leds
@@ -237,3 +265,8 @@ ISR (PCINT1_vect) {
   }
 }
 
+
+ISR(TIMER0_OVF_vect) {
+    if (habilitado)
+      contador_unidades;
+}
