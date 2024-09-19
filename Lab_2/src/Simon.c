@@ -192,18 +192,10 @@ void interrupciones(){
 
   GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
 
-  // Configuración de interrupciones externas en INT0, INT1 y PCINT para PD3
-  // MCUCR |= (1 << ISC01) | (1 << ISC11); // ISC01 = 1, ISC00 = 0 -> Flanco descendente de INT0 genera interrupción
-  // MCUCR &= ~((1 << ISC00) | (1 << ISC10)); // ISC11 = 1, ISC10 = 0 -> Flanco descendente de INT1 genera interrupción
+  PCMSK1 = 0b00000001; // Habilita PCINT8
+  PCMSK2 = 0b00000010; // Habilita PCINT12
   
-
-  PCMSK2 |= (1 << PCINT12); // Habilita PCINT11
-  PCMSK1 |= (1 << PCINT8); // Habilita PCINT8
-
-  //PCMSK = 0b10000000;
-  //PCMSK1 = 0b0000100;
-  //PCMSK2 = 0b00000001;
-  MCUCR = 0b00001010;
+  MCUCR = 0b00001010; // Configura INTx para que se active por flanco negativo
 }
 
 void parpadear_dos_veces(){
