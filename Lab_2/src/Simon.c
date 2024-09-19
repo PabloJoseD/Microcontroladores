@@ -24,6 +24,7 @@ int current_state;
 int user_input; 
 int user_index = 0;       // Index to track user's progress in the sequence
 int sequence_length = 4;
+int semilla = 0xBAD;
 
 uint8_t secuencia[MAX_SECUENCIA];   // Arreglo para almacenar la secuencia de LEDs
 uint8_t nivel;                  // Nivel inicial del juego
@@ -58,6 +59,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
+      semilla += 0xCAFE;
       if (user_input !=0) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
         user_input = 0;
@@ -66,6 +68,7 @@ void maquina() {
       }
       else {
         current_state = WAITING_START;
+        semilla += 0x13;
       }
       break;
 
@@ -109,6 +112,7 @@ void maquina() {
       break;
 
     case GAME_WON:
+      semilla += 0xFACE;
       tiempo_encendido -= 8000;
       nivel++;
       current_state = START_GAME;
@@ -127,7 +131,8 @@ void maquina() {
 
 
 void generate_sequence(uint8_t longitud) {
-    srand(time(NULL));  // Seed the random number generator
+    semilla += 0x77;
+    srand(semilla);  // Seed the random number generator
     for (int i = 0; i < longitud; i++) {
         secuencia[i] = (rand() % 4 + 1);  // Random number between 0 and 3
     }
@@ -190,11 +195,11 @@ void pines(){
 
 void interrupciones(){
 
-  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE0 y PCIE1.
+  GIMSK = 0xD8; // Habilita interrupciones INT0, INT1, PCIE1 y PCIE2.
 
   PCMSK1 = 0b00000001; // Habilita PCINT8
   PCMSK2 = 0b00000010; // Habilita PCINT12
-  
+
   MCUCR = 0b00001010; // Configura INTx para que se active por flanco negativo
 }
 
