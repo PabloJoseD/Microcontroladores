@@ -183,11 +183,11 @@ void show_sequence(uint8_t longitud, uint16_t tiempo) {
 void retardo(int desborde){
   contador_unidades = 0;
   habilitado        = 1;
-  TIMSK             = 0b10;
+  TIMSK             = 0x02;
   while(contador_unidades < desborde){
     PORTB &= 0b11111111;
   }
-  TIMSK = 0b00;
+  TIMSK = 0x00;
   habilitado = 0;
 }
 
@@ -207,7 +207,7 @@ void interrupciones(){
   // Configura el Timer/Counter0 
   TCCR0A = 0b00000000;   
   TCCR0B = 0b00000101;   // prescale de 1024
-  TCNT0 = 0b00000000;
+  TCNT0 = 0x00;
 
   habilitado = 0;
   contador_unidades = 0;
