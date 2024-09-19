@@ -10,14 +10,13 @@
 
 // FSM States
 //typedef enum {
-#define INITIAL_STATE 1
-#define WAITING_START 2
-#define START_GAME 4
-#define SHOW_SEQUENCE 8
-#define WAIT_USER_INPUT 16
-#define CHECK_DIGIT 32
-#define GAME_WON 64  
-#define GAME_LOST 128
+#define WAITING_START 1
+#define START_GAME 2
+#define SHOW_SEQUENCE 4
+#define WAIT_USER_INPUT 8
+#define CHECK_DIGIT 16
+#define GAME_WON 32
+#define GAME_LOST 64
 //} fsm_state_t;
 
 int current_state;
@@ -59,7 +58,7 @@ int main(void){
 void maquina() {
   switch (current_state) {
     case WAITING_START:
-      if (user_input == 1 || user_input == 2 || user_input == 3 || user_input == 4) { //user_input == 1 || user_input == 2 || user_input == 4
+      if (user_input !=0) { //user_input == 1 || user_input == 2 || user_input == 4
         current_state = START_GAME;
         user_input = 0;
         nivel = 1;
@@ -86,29 +85,27 @@ void maquina() {
       break;
 
     case WAIT_USER_INPUT:
-      if (user_input == 1 || user_input == 2 || user_input == 3 || user_input == 4)
+      if (user_input != 0)
         current_state = CHECK_DIGIT;  // Se presiono algun boton
       else 
         current_state = WAIT_USER_INPUT;  // No se ha presionado ningun boton
       break;
 
     case CHECK_DIGIT: 
-      if (user_input == secuencia[user_index] || user_input == 1) {
+      if (user_input == secuencia[user_index]) {
         // Correct digit, move to the next one
         user_index++;
         if (user_index == 3 + nivel) {
           // User completed the sequence, game won
           current_state = GAME_WON;
-          user_input = 0;
         } else {
           // Continue waiting for next digit
           current_state = WAIT_USER_INPUT;
-          user_input = 0;
         }
       } else {
-        user_input = 0;
         current_state = GAME_LOST;
       }
+      user_input = 0;
       break;
 
     case GAME_WON:
